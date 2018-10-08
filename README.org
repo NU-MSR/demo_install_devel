@@ -1,0 +1,9 @@
+* Introduction
+
+This ROS package contains a single, simple Python script that simply prints out
+the absolute path of the script itself. It also contains a very simple launch
+file that simply runs the Python script as a required node -- thus, when the
+node exits, the =roslaunch= process also dies. Both the launch file and the
+Python script are installed in the =CMakeLists.txt= file according to the
+official catkin documentation. See here for docs on [[http://docs.ros.org/jade/api/catkin/html/howto/format2/installing_other.html][installing arbitrary files]]
+and here for docs on [[http://docs.ros.org/melodic/api/catkin/html/howto/format2/installing_python.html][installing Python scripts]].

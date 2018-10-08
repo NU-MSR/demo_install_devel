@@ -1,9 +1,69 @@
 * Introduction
 
-This ROS package contains a single, simple Python script that simply prints out
-the absolute path of the script itself. It also contains a very simple launch
-file that simply runs the Python script as a required node -- thus, when the
-node exits, the =roslaunch= process also dies. Both the launch file and the
-Python script are installed in the =CMakeLists.txt= file according to the
-official catkin documentation. See here for docs on [[http://docs.ros.org/jade/api/catkin/html/howto/format2/installing_other.html][installing arbitrary files]]
-and here for docs on [[http://docs.ros.org/melodic/api/catkin/html/howto/format2/installing_python.html][installing Python scripts]].
+  This ROS package contains a single, simple Python script that simply prints
+  out the absolute path of the script itself. It also contains a very simple
+  launch file that simply runs the Python script as a required node -- thus,
+  when the node exits, the =roslaunch= process also dies. Both the launch file
+  and the Python script are installed in the =CMakeLists.txt= file according to
+  the official catkin documentation. See here for docs on [[http://docs.ros.org/jade/api/catkin/html/howto/format2/installing_other.html][installing arbitrary files]] and here for docs on [[http://docs.ros.org/melodic/api/catkin/html/howto/format2/installing_python.html][installing Python scripts]].
+
+  With this package we will illustrate the effects of using the =devel/= and the
+  =install/= [[http://wiki.ros.org/catkin/workspaces#Development_.28Devel.29_Space][result spaces that catkin produces]]. Below we will provide some
+  simple setup instructions, and then we will have a set of exercises that
+  should help the reader understand the implications of using each of these
+  spaces.
+
+* Getting started
+
+  We begin by creating a catkin workspace that we will use for all demos. We
+  will assume the workspace is located at =~/demows= and that you are using ROS
+  =melodic=. If that is not your situation, some of the commands below may
+  require a bit of editing.
+
+  Let's begin by initializing the workspace, and cloning this package into the
+  =src/= directory:
+  #+BEGIN_SRC sh
+  # change directory to home:
+  cd
+  # create workspace directories:
+  mkdir -p demows/src
+  # initialize workspace and clone package:
+  cd demows/src
+  source /opt/ros/melodic/setup.bash
+  catkin_init_workspace
+  git clone https://github.com/NU-MSR/demo_install_devel.git
+  #+END_SRC
+
+  Now we are ready to build the workspace which will create the =build/=
+  directory, and by default, the =devel/= result space.
+  #+BEGIN_SRC
+  # change directory to the root of this workspace:
+  cd ~/demows/
+  # compile the whole workspace into the devel/ result space
+  catkin_make
+  # activate the devel/ result space
+  source devel/setup.bash
+  #+END_SRC
+
+  Now we want to create the =install/= result space, but we need to make sure
+  that we don't "extend" or "chain" the =devel/= space -- we want these two
+  result spaces to be completely independent. When a result space is first
+  created, the setup scripts (e.g. =setup.bash=) are automatically generated to
+  have the /new/ result space extend whatever result spaces are already "active"
+  in the current terminal. So we will explicitly set only the base ROS =melodic=
+  installation as the active space before creating the =install/= result space:
+  #+BEGIN_SRC sh
+  # change directory to the root of this workspace:
+  cd ~/demows/
+  # activate only the "base" result space:
+  source /opt/ros/melodic/setup.bash
+  # compile the whole workspace into the install/ result space
+  catkin_make install
+  # activate the install/ result space
+  source install/setup.bash
+  #+END_SRC
+
+  Now we have both a =devel/= and an =install/= result space. To choose which
+  one is currently active, all we have to do is "source" the =setup.bash= file
+  from each respective space. To see this in action, see the snippet below where
+  I source each setup file, and then print the relevant environment variables.

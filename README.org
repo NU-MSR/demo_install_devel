@@ -95,3 +95,18 @@ jarvis@test2018:~/demows⟫ diff install_env.txt devel_env.txt
 ---
 > ROS_PACKAGE_PATH=/home/jarvis/demows/src:/opt/ros/melodic/share
   #+END_SRC
+
+  The environment variables that differ are the variables that control which
+  result space is "active".
+
+* Exercises
+
+** Run node from both result spaces
+
+** Execute launch file from both result spaces
+
+** Demonstrate edits to the package
+
+** See impact of the =install= commands in CMakeLists.txt
+
+

@@ -6,17 +6,11 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   )
 
-add_message_files(
-  FILES
-)
-
-add_service_files(
-  FILES
-)
-
-generate_messages(
-  DEPENDENCIES
-)
-
 catkin_package()
+
+catkin_install_python(PROGRAMS src/show_file_directory.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 

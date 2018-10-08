@@ -1,4 +1,4 @@
 <launch>
   <node name="show_path" type="show_file_directory.py" pkg="demo_install_devel"
-		output="screen" />
+		output="screen" required="true"/>
 </launch>

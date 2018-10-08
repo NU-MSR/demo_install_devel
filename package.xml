@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>demo_install_devel</name>
+  <version>1.0.0</version>
+  <description>Simple demo package for showing the difference between the devel
+  and install result spaces</description>
+  <maintainer email="jarvis@todo.todo">jarvis</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <exec_depend>rospy</exec_depend>
+</package>

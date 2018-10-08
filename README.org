@@ -36,7 +36,7 @@
 
   Now we are ready to build the workspace which will create the =build/=
   directory, and by default, the =devel/= result space.
-  #+BEGIN_SRC
+  #+BEGIN_SRC sh
   # change directory to the root of this workspace:
   cd ~/demows/
   # compile the whole workspace into the devel/ result space
@@ -67,3 +67,31 @@
   one is currently active, all we have to do is "source" the =setup.bash= file
   from each respective space. To see this in action, see the snippet below where
   I source each setup file, and then print the relevant environment variables.
+
+  #+BEGIN_SRC sh
+jarvis@test2018:~/demows⟫ source /opt/ros/melodic/setup.bash
+jarvis@test2018:~/demows⟫ alias rget='env |grep "ROS\|CMAKE_PREFIX_PATH\|PYTHONPATH" |sort'
+jarvis@test2018:~/demows⟫ source install/setup.bash
+jarvis@test2018:~/demows⟫ rget > install_env.txt
+jarvis@test2018:~/demows⟫ source devel/setup.bash
+jarvis@test2018:~/demows⟫ rget > devel_env.txt
+jarvis@test2018:~/demows⟫ diff install_env.txt devel_env.txt
+  #+END_SRC
+
+  The diff from the last line above is nicely formatted as:
+  #+BEGIN_SRC diff
+1,2c1,2
+< CMAKE_PREFIX_PATH=/home/jarvis/demows/install:/opt/ros/melodic
+< PYTHONPATH=/home/jarvis/demows/install/lib/python2.7/dist-packages:/opt/ros/melodic/lib/python2.7/dist-packages:/home/jarvis/.local/lib/python2.7/site-packages:/usr/local/lib:/usr/lib/python2.7/config:/usr/local/lib/python2.7/site-packages
+---
+> CMAKE_PREFIX_PATH=/home/jarvis/demows/devel:/opt/ros/melodic
+> PYTHONPATH=/home/jarvis/demows/devel/lib/python2.7/dist-packages:/opt/ros/melodic/lib/python2.7/dist-packages:/home/jarvis/.local/lib/python2.7/site-packages:/usr/local/lib:/usr/lib/python2.7/config:/usr/local/lib/python2.7/site-packages
+6c6
+< ROSLISP_PACKAGE_DIRECTORIES=
+---
+> ROSLISP_PACKAGE_DIRECTORIES=/home/jarvis/demows/devel/share/common-lisp
+8c8
+< ROS_PACKAGE_PATH=/home/jarvis/demows/install/share:/opt/ros/melodic/share
+---
+> ROS_PACKAGE_PATH=/home/jarvis/demows/src:/opt/ros/melodic/share
+  #+END_SRC

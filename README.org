@@ -1,3 +1,5 @@
+#+OPTIONS: ^:nil toc:nil tex:t p:t timestamp:nil
+
 * Introduction
 
   This ROS package contains a single, simple Python script that simply prints
@@ -103,10 +105,149 @@ jarvis@test2018:~/demows⟫ diff install_env.txt devel_env.txt
 
 ** Run node from both result spaces
 
+   For this exercise, you will simply active each result space by sourcing the
+   appropriate =setup.bash= file, and then use =rosrun demo_install_devel
+   show_file_directory= and verify that the path that is printed out is in a
+   different location (don't forget that in another terminal you'll also need to
+   run =roscore=). Pay attention to the exact location of the script. When the
+   =devel/= space is active, you should see that the script is located in its
+   original location inside of the =src/= directory. When the =install/= space
+   is active you'll see that the script is instead located in the =install/=
+   directory itself.
+
 ** Execute launch file from both result spaces
+
+   For this exercise, you first verify that you can run =roslaunch
+   demo_install_devel show_path.launch= with each result space active. This
+   should work with no issues. A logical question is then, when you run that
+   =roslaunch= command, where is ROS finding the launch file? The answer is
+   different depending on which result space you are using -- this is one of the
+   most important implications of using these different result spaces. Note that
+   in the diff from above the =ROS_PACKAGE_PATH= for the =install/= space starts
+   with =/home/jarvis/demows/install/share=, while in the =devel/= result space
+   the first entry is =/home/jarvis/demows/src=. Thus the =devel/= space
+   searches within the =src/= directory for ROS packages, while the =install/=
+   space only searches within the =install/= directory.
+
+** Introspect in both result spaces
+
+   In the previous exercises we've noted that the location of the node is
+   dependent on which result space is active, and we've noted that the ROS
+   environment variables are also a function of which result space is active. In
+   this exercise, we will use some of the ROS command line tools to further see
+   the effects of these variables. Start by using =rospack= to find the location
+   of the current package (e.g. =rospack find demo_install_devel=). Does this
+   return different results depending on which result space is active? It
+   should!
+
+   The aforementioned varying results when using the =rospack= command-line tool
+   to locate our package have cascading effects in many ROS tools, because many
+   tools use rospack's Python or C++ API for performing package introspection.
+   This is true for =rosrun=, =roslaunch=, =roscd=, =rosed=, and more. Try
+   running =roscd demo_install_devel= with each result space active. Do you end
+   up in different directories?
+
 
 ** Demonstrate edits to the package
 
+   Let's think about the impact that the aforementioned exercises have on a
+   standard development workflow. If we were to edit the launch file or the
+   Python script in this package, while the =devel/= space was active, then
+   because the various ROS tools automatically find the copies of these files in
+   the =src/= directory, the edits would be instantly picked up. To see this,
+   let's edit both the launch file and the Python script and verify that when we
+   use these files the edits immediately take effect.
+   1. First let's activate the =devel/= space with =source
+      ~/catkinws/devel/setup.bash=
+   2. Now let's edit the Python script to include some built-in ROS
+      introspection. Edit the script such that it looks like the following:
+	  #+BEGIN_SRC python
+#!/usr/bin/env python
+import os
+import rospkg
+OKBLUE = '\033[94m'
+ENDC = '\033[0m'
+
+def main():
+    # all we want to do in here is show the location of the executable and the current package:
+    rospack = rospkg.RosPack()
+    pkgdir = rospack.get_path("demo_install_devel")
+    print ""
+    print OKBLUE+"================================================================================"
+    print "Path of the executable itself is = ", os.path.abspath(__file__)
+    print "Path returned by rospkg = ", pkgdir
+    print "================================================================================"+ENDC
+    print ""
+    return
+
+if __name__ == '__main__':
+    main()
+	  #+END_SRC
+   3. Now, verify that running this node (using =rosrun demo_install_devel
+      show_file_directory=) immediately prints out the new line that returns the
+      path to the =demo_install_devel= package.
+   4. Activate the =install/= result space, and try running the node again. Does
+      the new line show up? The new line shouldn't show up because =rospack= is finding the package in the =install/= directory, where it still contains the old copy of the code.
+   5. We can update the code in the =install/= directory by running =catkin_make
+      install=. After running this, does the new line show up when you run the
+      node (it should)?
+
+   So note, that if one were to use the =install/= result space, you would need
+   to run =catkin_make install= after every edit to the package. This is not
+   very convenient for regular development, and a key reason why most ROS
+   developers use the =devel/= space nearly 100% of the time when developing ROS
+   packages. In our course notes, there are some descriptions of situations
+   where one might want to use the =install/= space. In my experience, the most
+   useful application of the =install/= space is when working on actually
+   releasing packages as a way to ensure that all required files have proper
+   =install= targets.
+
+   Try to repeat the above exercise with the launch file. You could try changing
+   modifying the ~required="true"~ to be false, and see that your roslaunch
+   process now requires you to kill it with =Ctrl-c= instead of it automatically
+   dying after the node exits.
+
+
 ** See impact of the =install= commands in CMakeLists.txt
 
+   As a final step, let's see what the install targets in the CMakeLists.txt
+   file actually do. Note that if you =cd= into
+   =~/demows/install/lib/demo_install_devel= you will see there is an executable
+   script there that is simply a copy of the [[file:src/show_file_directory][show_file_directory]] node. This
+   comes from the following lines in the CMakeLists.txt file:
 
+   #+BEGIN_SRC cmake
+   catkin_install_python(PROGRAMS src/show_file_directory
+     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+   #+END_SRC
+
+   Similarly, if you look at the
+   =~/demows/install/share/demo_install_devel/launch= directory, you'll see a
+   copy of the launch file that is part of this package that was placed there
+   during a call to =catkin_make install=. The corresponding lines in the
+   CMakeLists.txt file are here:
+
+   #+BEGIN_SRC cmake
+   install(DIRECTORY launch/
+     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
+   #+END_SRC
+
+   Try removing your install space with =rm -r ~/demows/install= and then
+   removing the two aforementioned install targets from this package's
+   CMakeLists.txt file. Now re-run =catkin_make install= and check to see that
+   the launch file and node are missing from the =install/= result space. Note
+   now that running trying to run this package's node or launch file results in
+   the following errors:
+
+   #+BEGIN_SRC sh
+jarvis@test2018:~/demows⟫ roslaunch demo_install_devel show_path.launch
+RLException: [show_path.launch] is neither a launch file in package [demo_install_devel] nor is [demo_install_devel] a launch file name
+The traceback for the exception was written to the log file
+jarvis@test2018:~/demows⟫ rosrun demo_install_devel show_file_directory
+[rosrun] Couldn't find executable named show_file_directory below /home/jarvis/demows/install/share/demo_install_devel
+   #+END_SRC
+
+   These install targets are used when actually building a package for release
+   to the ROS buildfarm. If things don't properly work when using the =install/=
+   space, then that is a good indication that things won't work when you try to
+   release the package.
